@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Age Calculator</h2>
+        <label for="dobYear">Enter your Year of Birth:</label>
+        <select id="dobYear">
+            <!-- Add years dynamically -->
+        </select>
+
+        <label for="dobMonth">Enter your Month of Birth:</label>
+        <select id="dobMonth">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+        </select>
+
+        <label for="dobDay">Enter your Day of Birth:</label>
+        <select id="dobDay">
+            <!-- Days will be added dynamically -->
+        </select>
+
+        <button onclick="calculateAge()">Calculate Age</button>
+        <div class="result" id="ageResult"></div>
+    </div>
+
+    <script>
+        // Generate years from 1900 to the current year
+        const currentYear = new Date().getFullYear();
+        const yearSelect = document.getElementById('dobYear');
+        for (let year = currentYear; year >= 1900; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.text = year;
+            yearSelect.appendChild(option);
+        }
+
+        // Generate days for each month (takes into account different number of days in months)
+        const daySelect = document.getElementById('dobDay');
+        function generateDays(month) {
+            daySelect.innerHTML = ''; // Clear previous days
+            let daysInMonth;
+            if (month === 2) {
+                // Check for leap year
+                const year = document.getElementById('dobYear').value;
+                daysInMonth = (new Date(year, 1, 29).getMonth() === 1) ? 29 : 28; // February leap year check
+            } else if (['4', '6', '9', '11'].includes(month)) {
+                daysInMonth = 30; // April, June, September, November
+            } else {
+                daysInMonth = 31; // Other months
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const option = document.createElement('option');
+                option.value = day;
+                option.text = day;
+                daySelect.appendChild(option);
+            }
+        }
+
+        // Event listener to generate days when month or year changes
+        document.getElementById('dobMonth').addEventListener('change', function() {
+            generateDays(this.value);
+        });
+        
+        document.getElementById('dobYear').addEventListener('change', function() {
+            generateDays(document.getElementById('dobMonth').value);
+        });
+
+        // Initial population of days for the selected month and year
+        generateDays(document.getElementById('dobMonth').value);
+
+        function calculateAge() {
+            const day = parseInt(document.getElementById('dobDay').value);
+            const month = parseInt(document.getElementById('dobMonth').value) - 1; // JavaScript months are 0-indexed
+            const year = parseInt(document.getElementById('dobYear').value);
+            
+            if (!day || !month || !year) {
+                alert("Please select a complete date of birth.");
+                return;
+            }
+
+            const birthDate = new Date(year, month, day);
+            const today = new Date();
+
+            let ageYears = today.getFullYear() - birthDate.getFullYear();
+            let ageMonths = today.getMonth() - birthDate.getMonth();
+            let ageDays = today.getDate() - birthDate.getDate();
+
+            if (ageMonths < 0 || (ageMonths === 0 && ageDays < 0)) {
+                ageYears--;
+                ageMonths += 12;
+            }
+
+            if (ageDays < 0) {
+                const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                ageDays += prevMonth.getDate();
+                ageMonths--;
+            }
+
+            const ageInSeconds = Math.floor((today - birthDate) / 1000);
+            const ageInMinutes = Math.floor(ageInSeconds / 60);
+            const ageInHours = Math.floor(ageInMinutes / 60);
+            const ageInDays = Math.floor(ageInSeconds / (60 * 60 * 24));
+
+            document.getElementById('ageResult').innerHTML = `
+                Your age is: <strong>${ageYears}</strong> years, 
+                <strong>${ageMonths}</strong> months, 
+                <strong>${ageDays}</strong> days, <br>
+                or <strong>${ageInDays}</strong> days, <strong>${ageInHours}</strong> hours, 
+                <strong>${ageInMinutes}</strong> minutes, 
+                <strong>${ageInSeconds}</strong> seconds.
+            `;
+        }
+    </script>
+</body>
+</html>
